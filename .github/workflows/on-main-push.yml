@@ -1,4 +1,4 @@
-name: Deploy to servers
+name: Checagem prévia
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
 
 env:
   GITHUB: yes
-
 
 jobs:
 
