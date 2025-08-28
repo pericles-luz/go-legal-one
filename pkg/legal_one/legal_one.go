@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/pericles-luz/go-base/pkg/utils"
@@ -26,6 +28,7 @@ func (l *LegalOne) Autenticate() error {
 	if l.token != nil && l.token.IsValid() {
 		return nil
 	}
+	log.Println(l.getRest().GetConfig("LN_Auth"))
 	authPreBase64 := l.getRest().GetConfig("DE_User") + ":" + l.getRest().GetConfig("PW_Senha")
 	authBase64 := base64.StdEncoding.EncodeToString([]byte(authPreBase64))
 	resp, err := l.getRest().PostWithHeaderNoAuth(nil, l.getRest().GetConfig("LN_Auth"), map[string]string{
@@ -38,6 +41,7 @@ func (l *LegalOne) Autenticate() error {
 	if err != nil {
 		return err
 	}
+	log.Println(response)
 	token := rest.NewToken()
 	token.SetKey(response.AccessToken)
 	token.SetValidity(time.Now().UTC().Add(time.Minute * TOKEN_VALIDITY).Format("2006-01-02 15:04:05"))
@@ -114,7 +118,7 @@ func (l *LegalOne) GetLawsuitByProcessNumber(processNumber string) (*LawsuitResp
 }
 
 func (l *LegalOne) GetLawsuitByFolder(folder string) (*LawsuitResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?$filter=folder eq '"+folder+"'", nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?"+url.QueryEscape("folder="+folder+""), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +126,7 @@ func (l *LegalOne) GetLawsuitByFolder(folder string) (*LawsuitResponse, error) {
 }
 
 func (l *LegalOne) GetAppealByFolder(folder string) (*AppealResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/?$filter=folder eq '"+folder+"'", nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/?"+strings.ReplaceAll(url.QueryEscape("$filter=folder eq '"+folder+"'"), "+", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +234,7 @@ func (l *LegalOne) get(url string, data map[string]interface{}) (*rest.Response,
 		return nil, err
 	}
 	log.Println("data para o GET: ", data)
+	log.Println("url para o GET: ", url)
 
 	l.getRest().SetToken(l.token)
 	resp, err := l.getRest().Get(data, url)
