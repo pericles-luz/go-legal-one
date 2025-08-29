@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -28,7 +27,6 @@ func (l *LegalOne) Autenticate() error {
 	if l.token != nil && l.token.IsValid() {
 		return nil
 	}
-	log.Println(l.getRest().GetConfig("LN_Auth"))
 	authPreBase64 := l.getRest().GetConfig("DE_User") + ":" + l.getRest().GetConfig("PW_Senha")
 	authBase64 := base64.StdEncoding.EncodeToString([]byte(authPreBase64))
 	resp, err := l.getRest().PostWithHeaderNoAuth(nil, l.getRest().GetConfig("LN_Auth"), map[string]string{
@@ -41,7 +39,6 @@ func (l *LegalOne) Autenticate() error {
 	if err != nil {
 		return err
 	}
-	log.Println(response)
 	token := rest.NewToken()
 	token.SetKey(response.AccessToken)
 	token.SetValidity(time.Now().UTC().Add(time.Minute * TOKEN_VALIDITY).Format("2006-01-02 15:04:05"))
@@ -54,7 +51,7 @@ func (l *LegalOne) GetContactByCPF(cpf string) (*ContactResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/contacts?$filter=identificationNumber eq '"+cpf+"'", nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/contacts?"+strings.ReplaceAll("$filter=identificationNumber eq '"+cpf+"'", " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +99,7 @@ func (l *LegalOne) GetLawsuits() (*LawsuitResponse, error) {
 }
 
 func (l *LegalOne) GetLawsuitParticipationByContactID(lawsuitID int, contactID int) (*LitigationParticipationResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/"+utils.IntToString(lawsuitID)+"/participants/?$filter=contactId eq "+utils.IntToString(contactID), nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/"+utils.IntToString(lawsuitID)+"/participants/?"+strings.ReplaceAll("$filter=contactId eq ", " ", "%20")+utils.IntToString(contactID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +107,7 @@ func (l *LegalOne) GetLawsuitParticipationByContactID(lawsuitID int, contactID i
 }
 
 func (l *LegalOne) GetLawsuitByProcessNumber(processNumber string) (*LawsuitResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?$filter=identifierNumber eq '"+processNumber+"'", nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?"+strings.ReplaceAll("$filter=identifierNumber eq '"+processNumber+"'", " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +115,7 @@ func (l *LegalOne) GetLawsuitByProcessNumber(processNumber string) (*LawsuitResp
 }
 
 func (l *LegalOne) GetLawsuitByFolder(folder string) (*LawsuitResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?"+url.QueryEscape("folder="+folder+""), nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/?"+strings.ReplaceAll("$filter=folder eq '"+folder+"'", " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +123,7 @@ func (l *LegalOne) GetLawsuitByFolder(folder string) (*LawsuitResponse, error) {
 }
 
 func (l *LegalOne) GetAppealByFolder(folder string) (*AppealResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/?"+strings.ReplaceAll(url.QueryEscape("$filter=folder eq '"+folder+"'"), "+", "%20"), nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/?"+strings.ReplaceAll("$filter=folder eq '"+folder+"'", " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +131,7 @@ func (l *LegalOne) GetAppealByFolder(folder string) (*AppealResponse, error) {
 }
 
 func (l *LegalOne) GetAppealParticipationByContactID(appealID int, contactID int) (*LitigationParticipationResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/"+utils.IntToString(appealID)+"/participants/?$filter=contactId eq "+utils.IntToString(contactID), nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/appeals/"+utils.IntToString(appealID)+"/participants/?"+strings.ReplaceAll("$filter=contactId eq ", " ", "%20")+utils.IntToString(contactID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +139,7 @@ func (l *LegalOne) GetAppealParticipationByContactID(appealID int, contactID int
 }
 
 func (l *LegalOne) GetLitigationByContactID(contactID int) (*LitigationResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/litigations?$filter=participants/any(p:p/contactId eq ("+utils.IntToString(contactID)+")  and (p/positionId eq (24) or p/positionId eq (1)))", nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/litigations?"+strings.ReplaceAll("$filter=participants/any(p:p/contactId eq ("+utils.IntToString(contactID)+")  and (p/positionId eq (24) or p/positionId eq (1)))", " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +211,7 @@ func (l *LegalOne) AppealParticipationDelete(appealID int, participationID int) 
 }
 
 func (l *LegalOne) GetLitigationUpdateByID(lawsuitID int, count int) (*LitigationUpdateResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/Updates?$filter=relationships/any(r:r/linkId eq ("+utils.IntToString(lawsuitID)+"))&$orderBy=id desc&$top="+utils.IntToString(count), nil)
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/Updates?"+strings.ReplaceAll("$filter=relationships/any(r:r/linkId eq ("+utils.IntToString(lawsuitID)+"))&$orderBy=id desc&$top="+utils.IntToString(count), " ", "%20"), nil)
 	if err != nil {
 		return nil, err
 	}
