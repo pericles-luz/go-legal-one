@@ -146,6 +146,14 @@ func (l *LegalOne) GetLitigationByContactID(contactID int) (*LitigationResponse,
 	return l.getParser().GetLitigationResponse(resp.GetRaw())
 }
 
+func (l *LegalOne) GetLitigationByID(lawsuitID int) (*Litigation, error) {
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/litigations/"+utils.IntToString(lawsuitID), nil)
+	if err != nil {
+		return nil, err
+	}
+	return l.getParser().GetLitigationSingleResponse(resp.GetRaw())
+}
+
 func (l *LegalOne) ParticipationRegistrate(data map[string]interface{}) (*LitigationParticipant, error) {
 	l.getParser().setData(data)
 	participation, err := l.getParser().ParticipationRegistrateRequest()

@@ -106,6 +106,16 @@ func TestLegalLitigationsByContactID(t *testing.T) {
 	t.Log(litigations)
 }
 
+func TestLegalLitigationByID(t *testing.T) {
+	t.Skip("Test only if necessary")
+	legalOne, err := factory.NewLegalOne("legalone.prod")
+	require.NoError(t, err)
+	litigation, err := legalOne.GetLitigationByID(11)
+	require.NoError(t, err)
+	require.NotEmpty(t, litigation)
+	t.Log(litigation)
+}
+
 func TestLegalOneParticipationRegistrate(t *testing.T) {
 	t.Skip("Test only if necessary")
 	legalOne, err := factory.NewLegalOne("legalone.prod")
