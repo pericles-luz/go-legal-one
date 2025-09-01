@@ -170,3 +170,35 @@ type LitigationUpdate struct {
 type LitigationUpdateResponse struct {
 	Value []LitigationUpdate `json:"value,omitempty"`
 }
+
+type ClaimObject struct {
+	Id          int    `json:"id,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+type UpperClaimObject struct {
+	Id          int         `json:"id,omitempty"`
+	ClaimObject ClaimObject `json:"ClaimObject,omitempty"`
+}
+
+type ClaimReason struct {
+	Id          int    `json:"id,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+type UpperClaimReason struct {
+	Id          int         `json:"id,omitempty"`
+	ClaimReason ClaimReason `json:"ClaimReason,omitempty"`
+}
+
+type ClaimResponse struct {
+	Id           int                `json:"id,omitempty"`
+	NatureId     int                `json:"natureId,omitempty"`
+	Claim        ClaimObject        `json:"claim,omitempty"`
+	ClaimObjects []UpperClaimObject `json:"claimObjects,omitempty"`
+	ClaimReasons []UpperClaimReason `json:"claimReasons,omitempty"`
+	Contingency  string             `json:"contingency,omitempty"`
+	ClaimDate    string             `json:"claimDate,omitempty"`
+	JudgmentDate string             `json:"judgmentDate,omitempty"`
+	Remarks      string             `json:"remarks,omitempty"`
+}

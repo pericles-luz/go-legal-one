@@ -146,6 +146,14 @@ func (l *LegalOne) GetLitigationByContactID(contactID int) (*LitigationResponse,
 	return l.getParser().GetLitigationResponse(resp.GetRaw())
 }
 
+func (l *LegalOne) GetClaimsByLawsuitID(lawsuitID int) (*ClaimResponse, error) {
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits/"+utils.IntToString(lawsuitID)+"/claims", nil)
+	if err != nil {
+		return nil, err
+	}
+	return l.getParser().GetClaimResponse(resp.GetRaw())
+}
+
 func (l *LegalOne) GetLitigationByID(lawsuitID int) (*Litigation, error) {
 	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/litigations/"+utils.IntToString(lawsuitID), nil)
 	if err != nil {
