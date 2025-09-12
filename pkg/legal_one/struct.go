@@ -96,7 +96,8 @@ type Lawsuit struct {
 }
 
 type LawsuitResponse struct {
-	Value []Lawsuit `json:"value,omitempty"`
+	Value    []Lawsuit `json:"value,omitempty"`
+	NextLink string    `json:"@odata.nextLink,omitempty"`
 }
 
 type LitigationParticipant struct {

@@ -90,12 +90,71 @@ func (l *LegalOne) IndividualDelete(id int) error {
 	return nil
 }
 
-func (l *LegalOne) GetLawsuits() (*LawsuitResponse, error) {
-	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits", nil)
+func (l *LegalOne) GetLawsuits(skip int) (*LawsuitResponse, error) {
+	skipText := ""
+	if skip > 0 {
+		skipText = "&$skip=" + utils.IntToString(skip)
+	}
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits?"+skipText, nil)
 	if err != nil {
 		return nil, err
 	}
 	return l.getParser().GetLawsuitResponse(resp.GetRaw())
+}
+
+func (l *LegalOne) GetLawsuitsFiltering(contains, notContains string, skip int) (*LawsuitResponse, error) {
+	skipText := ""
+	if skip > 0 {
+		skipText = "&$skip=" + utils.IntToString(skip)
+	}
+	containsText := ""
+	if contains != "" {
+		containsText = " and contains(folder, '" + contains + "')"
+	}
+	notContainsText := ""
+	if notContains != "" {
+		notContainsText = " and not contains(folder, '" + notContains + "')"
+	}
+	filter := strings.ReplaceAll("$filter=identifierNumber ne null"+containsText+notContainsText, " ", "%20")
+	resp, err := l.get(l.getRest().GetConfig("LN_API")+"/lawsuits?"+skipText+"&"+filter, nil)
+	if err != nil {
+		return nil, err
+	}
+	return l.getParser().GetLawsuitResponse(resp.GetRaw())
+}
+
+func (l *LegalOne) GetAllLawsuitsFiltering(contains, notContains string) (*LawsuitResponse, error) {
+	skip := 0
+	allLawsuits, err := l.GetLawsuitsFiltering(contains, notContains, skip)
+	if err != nil {
+		return nil, err
+	}
+	nextLink := ""
+	if allLawsuits == nil {
+		return nil, nil
+	}
+	nextLink = allLawsuits.NextLink
+	for nextLink != "" {
+		resp, err := l.get(nextLink, nil)
+		if err != nil {
+			return nil, err
+		}
+		lawsuits, err := l.getParser().GetLawsuitResponse(resp.GetRaw())
+		if err != nil {
+			return nil, err
+		}
+		if lawsuits == nil {
+			break
+		}
+		nextLink = ""
+		if len(lawsuits.Value) > 0 {
+			allLawsuits.Value = append(allLawsuits.Value, lawsuits.Value...)
+		}
+		if lawsuits.NextLink != "" {
+			nextLink = lawsuits.NextLink
+		}
+	}
+	return allLawsuits, nil
 }
 
 func (l *LegalOne) GetLawsuitParticipationByContactID(lawsuitID int, contactID int) (*LitigationParticipationResponse, error) {

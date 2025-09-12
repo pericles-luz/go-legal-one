@@ -29,7 +29,25 @@ func TestLegalOneGetLawsuits(t *testing.T) {
 	t.Skip("Test only if necessary")
 	legalOne, err := factory.NewLegalOne("legalone.prod")
 	require.NoError(t, err)
-	lawsuits, err := legalOne.GetLawsuits()
+	lawsuits, err := legalOne.GetLawsuits(0)
+	require.NoError(t, err)
+	require.NotEmpty(t, lawsuits.Value)
+}
+
+func TestLegalOneGetLawsuitsFiltering(t *testing.T) {
+	t.Skip("Test only if necessary")
+	legalOne, err := factory.NewLegalOne("legalone.prod")
+	require.NoError(t, err)
+	lawsuits, err := legalOne.GetLawsuitsFiltering("Colet-", "/", 0)
+	require.NoError(t, err)
+	require.NotEmpty(t, lawsuits.Value)
+}
+
+func TestLegalOneGetAllLawsuitsFiltering(t *testing.T) {
+	t.Skip("Test only if necessary")
+	legalOne, err := factory.NewLegalOne("legalone.prod")
+	require.NoError(t, err)
+	lawsuits, err := legalOne.GetAllLawsuitsFiltering("Colet-", "/")
 	require.NoError(t, err)
 	require.NotEmpty(t, lawsuits.Value)
 }
@@ -90,7 +108,7 @@ func TestLegalOneGetLawsuitByFolder(t *testing.T) {
 	t.Skip("Test only if necessary")
 	legalOne, err := factory.NewLegalOne("legalone.prod")
 	require.NoError(t, err)
-	lawsuits, err := legalOne.GetLawsuitByFolder("Colet-0295")
+	lawsuits, err := legalOne.GetLawsuitByFolder("Colet-0292")
 	require.NoError(t, err)
 	require.NotEmpty(t, lawsuits.Value)
 	t.Log(lawsuits)
